@@ -1,0 +1,26 @@
+# Large data files - don't commit these
+*.pkl
+*.pth
+vg_text.txt
+vg_text_augmented.txt
+cifar100_word_descriptions.txt
+region_descriptions.json
+region_descriptions.json.zip
+*.tar.gz
+
+# Data directories
+data/
+Generating More Words/data/
+
+# Python cache
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+
+# Training outputs
+training_loss.png
+training_summary.txt
+
