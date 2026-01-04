@@ -125,6 +125,7 @@ class SkipGramDataset(torch.utils.data.Dataset):
         distance_matrix: np.ndarray,
         num_negative: int = 15,
         context_size: int = 1,
+        token_counts: Dict[str, int] = None,  # NEW: for frequency-weighted negative sampling
     ):
     
         super().__init__()
@@ -143,8 +144,11 @@ class SkipGramDataset(torch.utils.data.Dataset):
         #  the model focus on more important relationships
         self.pairs, self.weights = self._generate_weighted_pairs()
 
+        # Step 3: Build frequency-weighted negative sampling distribution
+        # WHY: Word2Vec paper found that freq^0.75 works better than uniform sampling
+        self.negative_sampling_probs = self._build_negative_sampling_distribution(token_counts)
         
-        # Step 3: Initialize per-worker RNG (lazily, in __getitem__)
+        # Step 4: Initialize per-worker RNG (lazily, in __getitem__)
         # WHY: Multi-worker DataLoaders need independent random streams
         self._local_rng = None
         
@@ -170,41 +174,6 @@ class SkipGramDataset(torch.utils.data.Dataset):
         return contexts  #*
 
     def _generate_weighted_pairs(self) -> Tuple[List[Tuple[int, int]], np.ndarray]:
-        """
-        Generate (center_idx, context_idx) pairs and compute importance weights.
-        
-        Algorithm:
-        1. Iterate through self.contexts to create pairs
-        2. For each (center, context) pair, look up the distance from distance_matrix
-        3. Convert distances to weights (closer pairs = higher weight)
-        4. Apply transformations to prevent overfitting:
-           - Sublinear scaling (sqrt) to reduce extreme weights
-           - Clipping to prevent dominance by a few pairs
-        5. Normalize weights for interpretability
-        
-        WEIGHT FORMULA:
-        Starting from raw distances (where larger = farther):
-            raw_weight = (max_distance + 1) - distance  # invert so closer = larger
-            weight = sqrt(raw_weight)                    # sublinear scaling
-            weight = clip(weight, max=95th_percentile * 3)  # prevent outliers
-            weight = normalize(weight)                   # scale to reasonable range
-        
-        WHY THESE TRANSFORMS:
-        - Inversion: Skip-gram should focus on close relationships
-        - Sqrt: Prevents a few very-high-frequency pairs from dominating
-        - Clipping: Extreme weights can cause training instability
-        - Normalization: Makes weights interpretable when printed
-        
-        HINTS:
-        - If there are no pairs, return ([], np.array([], dtype=np.float32))
-        - Use self.node_to_idx to convert node strings to indices
-        - np.percentile(weights, 95) gives you the 95th percentile
-        - Always ensure weights >= 1e-6 to avoid zeros
-        
-        Returns:
-            pairs: List of (center_idx, context_idx) tuples
-            weights: numpy array of weights, same length as pairs
-        """
         pairs = []  #*
         raw_distances = []  #*
         
@@ -227,41 +196,38 @@ class SkipGramDataset(torch.utils.data.Dataset):
         
         return pairs, weights.astype(np.float32)  #*
 
-    def __getitem__(self, idx: int) -> Tuple[np.int64, np.int64, np.ndarray]:
+    def _build_negative_sampling_distribution(self, token_counts: Dict[str, int] = None) -> np.ndarray:
         """
-        Get a single training example: (center_idx, context_idx, negatives).
+        Build frequency-weighted negative sampling distribution.
         
-        Algorithm:
-        1. Initialize per-worker RNG if needed (for DataLoader multi-processing)
-        2. Retrieve the positive pair at index idx
-        3. Build exclusion set: center + all its true contexts
-        4. Sample num_negative nodes from vocabulary, excluding the exclusion set
-        5. Return (center_idx, context_idx, negatives_array)
-        
-        WHY EXCLUDE TRUE CONTEXTS:
-        If we use a true context node as a "negative" example, we're training
-        the model with contradictory signals (it's both positive and negative).
-        This confuses learning.
-        
-        WHY PER-WORKER RNG:
-        DataLoader uses multiple worker processes. Each needs an independent
-        random stream or they'll all generate identical "random" samples.
-        
-        HINTS:
-        - Use torch.utils.data.get_worker_info() to detect multi-worker mode
-        - Seed the RNG with: torch.initial_seed() + worker_id
-        - Use self._local_rng.choice() for sampling negatives
-        - If available pool < num_negative, use replace=True
-        - Handle edge case: if no nodes are available, use the whole vocab
+        From the Word2Vec paper: sample negatives proportional to freq^0.75
+        This gives more weight to common words (better contrast) but doesn't
+        completely ignore rare words.
         
         Args:
-            idx: Index into self.pairs
+            token_counts: Dict mapping word -> frequency count
             
         Returns:
-            center_idx: numpy int64 scalar
-            context_idx: numpy int64 scalar  
-            negatives: numpy int64 array of shape (num_negative,)
+            probs: Array of shape (vocab_size,) with sampling probabilities
         """
+        if token_counts is None:
+            # Fallback to uniform if no counts provided
+            return np.ones(self.vocab_size, dtype=np.float32) / self.vocab_size
+        
+        # Get counts for each word in vocabulary order
+        counts = np.array([token_counts.get(node, 1) for node in self.nodes], dtype=np.float32)
+        
+        # Apply 3/4 power (from Word2Vec paper)
+        # This smooths the distribution: common words still dominate but less extremely
+        counts_powered = np.power(counts, 0.75)
+        
+        # Normalize to probabilities
+        probs = counts_powered / counts_powered.sum()
+        
+        return probs
+
+    def __getitem__(self, idx: int) -> Tuple[np.int64, np.int64, np.ndarray]:
+
         if self._local_rng is None:  #*
             worker_info = torch.utils.data.get_worker_info()  #*
             seed = (torch.initial_seed() + (worker_info.id if worker_info else 0)) % (2**32)  #*
@@ -271,13 +237,26 @@ class SkipGramDataset(torch.utils.data.Dataset):
         center_node = self.nodes[center_idx]  #*
         excluded = {self.node_to_idx[n] for n in self.contexts[center_node]}  #*
         excluded.add(center_idx)  #*
-        available = np.array([i for i in range(self.vocab_size) if i not in excluded], dtype=np.int64)  #*
         
-        if len(available) == 0:  #*
-            available = np.arange(self.vocab_size, dtype=np.int64)  #*
+        # Use frequency-weighted negative sampling
+        # Zero out probabilities for excluded words, then renormalize
+        probs = self.negative_sampling_probs.copy()
+        probs[list(excluded)] = 0
         
-        replace = len(available) < self.num_negative  #*
-        negatives = self._local_rng.choice(available, size=self.num_negative, replace=replace)  #*
+        if probs.sum() == 0:
+            # Fallback: if all words excluded, use uniform over everything
+            probs = np.ones(self.vocab_size, dtype=np.float32)
+            probs /= probs.sum()
+        else:
+            probs /= probs.sum()  # Renormalize after exclusions
+        
+        # Sample negatives using frequency-weighted distribution
+        negatives = self._local_rng.choice(
+            self.vocab_size, 
+            size=self.num_negative, 
+            replace=True,  # Always replace - we're sampling from distribution
+            p=probs
+        )
         
         return np.int64(center_idx), np.int64(context_idx), negatives.astype(np.int64)  #*
 
@@ -286,17 +265,7 @@ class SkipGramDataset(torch.utils.data.Dataset):
     # ========================================================================
 
     def get_sample_weights(self) -> np.ndarray:
-        """
-        Return per-pair weights for WeightedRandomSampler.
-        
-        Usage:
-            sampler = torch.utils.data.WeightedRandomSampler(
-                weights=dataset.get_sample_weights(),
-                num_samples=len(dataset),
-                replacement=True
-            )
-            loader = DataLoader(dataset, sampler=sampler, batch_size=32)
-        """
+
         return self.weights
 
     def __len__(self) -> int:
@@ -310,6 +279,13 @@ class SkipGramDataset(torch.utils.data.Dataset):
         print(f"  Positive pairs: {len(self.pairs):,}")
         print(f"  Negatives per positive: {self.num_negative}")
         print(f"  Total samples per epoch: {len(self.pairs) * (1 + self.num_negative):,}")
+        
+        # Check if using frequency-weighted negative sampling
+        is_uniform = np.allclose(self.negative_sampling_probs, 1.0 / self.vocab_size)
+        if is_uniform:
+            print(f"  Negative sampling: uniform (no token_counts provided)")
+        else:
+            print(f"  Negative sampling: frequency-weighted (freq^0.75)")
         
         if self.weights.size > 0:
             print(f"\n  Weight distribution:")
@@ -325,57 +301,8 @@ class SkipGramDataset(torch.utils.data.Dataset):
 # Model
 # ============================================================================
 
-"""
-SkipGramModel - Student Starter Code
-=====================================
-
-LEARNING OBJECTIVES:
-1. Understand dual embedding spaces (center vs context) in Skip-Gram
-2. Implement negative sampling loss with label smoothing
-3. Learn proper weight initialization for embedding layers
-4. Master PyTorch's batched matrix operations
-
-WHAT YOU'LL IMPLEMENT:
-- [ ] _init_embeddings(): Initialize embedding weights properly
-- [ ] forward(): Compute Skip-Gram Negative Sampling (SGNS) loss
-- [ ] get_embeddings(): Extract learned embeddings for downstream use
-
-KEY CONCEPTS:
-- Center embeddings: Represent words as "query" vectors
-- Context embeddings: Represent words as "key" vectors  
-- Why two spaces? Asymmetry helps distinguish "is context of" from "has context"
-- Negative sampling: Contrastive learning - push apart unrelated pairs
-"""
 
 class SkipGramModel(nn.Module):
-    """
-    Skip-Gram model with Negative Sampling (SGNS).
-    
-    Architecture:
-        - center_embeddings: Embedding(V, D) - represents words as query vectors
-        - context_embeddings: Embedding(V, D) - represents words as key vectors
-        - dropout: Regularization applied to center embeddings
-    
-    Why two embedding matrices?
-        In Skip-Gram, words play two roles:
-        1. As CENTER: "What contexts does this word appear in?"
-        2. As CONTEXT: "What centers is this word a context for?"
-        
-        These are asymmetric relationships. Using separate embeddings lets the
-        model learn different representations for each role, improving quality.
-    
-    Training objective:
-        Maximize: P(context | center) for true pairs
-        Minimize: P(negative | center) for random pairs
-        
-    Example:
-        >>> model = SkipGramModel(vocab_size=1000, embedding_dim=128)
-        >>> center = torch.tensor([5, 10])      # batch of 2 center words
-        >>> context = torch.tensor([8, 15])     # their true contexts
-        >>> negatives = torch.randint(0, 1000, (2, 10))  # 10 negatives each
-        >>> loss = model(center, context, negatives)
-        >>> print(loss.shape)  # torch.Size([2]) - loss per example
-    """
 
     def __init__(self, vocab_size: int, embedding_dim: int, dropout: float = 0.3):
         """
@@ -401,25 +328,7 @@ class SkipGramModel(nn.Module):
         self._init_embeddings()
 
     def _init_embeddings(self):
-        """
-        Initialize embedding weights using uniform distribution.
-        
-        Why initialization matters:
-            - Too large: Training becomes unstable (exploding gradients)
-            - Too small: Learning is slow (vanishing gradients)  
-            - Rule of thumb: scale inversely with embedding dimension
-        
-        Standard practice for Skip-Gram:
-            - Use uniform distribution: U(-scale, scale)
-            - Scale = 0.5 / sqrt(embedding_dim) OR 0.5 / embedding_dim
-            - We use 0.5 / embedding_dim for slightly more conservative init
-        
-        TODO: Initialize both embedding matrices
-        HINTS:
-        - Access embedding dimension via: self.center_embeddings.embedding_dim
-        - Use nn.init.uniform_(tensor, low, high) to initialize in-place
-        - Apply same initialization to both center_embeddings and context_embeddings
-        """
+
         scale = 0.5 / self.center_embeddings.embedding_dim  #*
         nn.init.uniform_(self.center_embeddings.weight, -scale, scale)  #*
         nn.init.uniform_(self.context_embeddings.weight, -scale, scale)  #*
@@ -433,43 +342,7 @@ class SkipGramModel(nn.Module):
         apply_dropout: bool = True,
         label_smoothing: float = 0.1
     ) -> torch.Tensor:
-        """
-        Compute Skip-Gram Negative Sampling loss.
-        
-        Algorithm:
-        1. Look up embeddings for center, context, and negative words
-        2. Compute positive score: similarity(center, context)
-        3. Compute negative scores: similarity(center, each negative)
-        4. Apply label smoothing to targets (anti-overfitting)
-        5. Compute binary cross-entropy loss using log-sigmoid
-        6. Return negative loss (we'll minimize this, which maximizes log-likelihood)
-        
-        Mathematical formulation:
-            Positive loss: -log(σ(center · context))
-            Negative loss: -Σ log(σ(-center · negative_i))
-            
-            With label smoothing (α = 0.1):
-            - True positive target: 0.9 instead of 1.0
-            - True negative target: 0.9 instead of 1.0
-            This prevents overconfident predictions
-        
-        Args:
-            center: Batch of center word indices, shape (B,)
-            context: Batch of true context word indices, shape (B,)
-            negatives: Batch of negative word indices, shape (B, K)
-            apply_dropout: Whether to apply dropout to center embeddings
-            label_smoothing: Smoothing factor (0 = no smoothing, 0.1 = mild)
-            
-        Returns:
-            loss: Per-example loss, shape (B,). Caller typically does loss.mean()
-        
-        HINTS:
-        - Use self.center_embeddings(center) to look up embeddings
-        - Dot product: torch.sum(a * b, dim=1) for element-wise mult + sum
-        - Batch matrix multiply: torch.bmm(A, B) where A is (B,K,D), B is (B,D,1)
-        - Log-sigmoid: F.logsigmoid(x) computes log(1/(1+exp(-x))) stably
-        - Label smoothing formula: smoothed_target = (1 - α) for positive
-        """
+
         
         center_emb = self.dropout(self.center_embeddings(center)) if apply_dropout else self.center_embeddings(center)  #*
         context_emb = self.context_embeddings(context)  #*
@@ -534,25 +407,7 @@ def train_embeddings(
     device=None,
     save_plot=True
 ):
-    """
-    Train Skip-Gram embeddings with weighted sampling.
-    
-    Args:
-        network_data: Dict with 'graph', 'nodes', 'distance_matrix'
-        embedding_dim: Embedding dimensionality
-        batch_size: Training batch size
-        epochs: Maximum epochs
-        learning_rate: Initial learning rate
-        num_negative: Negatives per positive (5-20 recommended)
-        validation_fraction: Fraction for validation
-        context_size: Graph distance for context (1=neighbors)
-        dropout: Dropout rate (default: 0.3)
-        weight_decay: L2 regularization (default: 1e-4)
-        label_smoothing: Label smoothing factor (default: 0.1)
-        patience: Early stopping patience
-        device: 'cuda' or 'cpu'
-        save_plot: Save training curve
-    """
+
     device = device or ("cuda" if torch.cuda.is_available() else "cpu") #How do I set .is_available() to true?
     
     # Filter punctuation
@@ -576,9 +431,12 @@ def train_embeddings(
     
     print(f"\nTrain edges: {len(all_edges[:split_idx]):,}, Val edges: {len(all_edges[split_idx:]):,}")
     
+    # Get token counts for frequency-weighted negative sampling
+    token_counts = network_data.get('token_counts', None)
+    
     # Create datasets
-    train_dataset = SkipGramDataset(train_graph, nodes, distance_matrix, num_negative, context_size)
-    val_dataset = SkipGramDataset(val_graph, nodes, distance_matrix, num_negative, context_size)
+    train_dataset = SkipGramDataset(train_graph, nodes, distance_matrix, num_negative, context_size, token_counts)
+    val_dataset = SkipGramDataset(val_graph, nodes, distance_matrix, num_negative, context_size, token_counts)
     
     # Create loaders with weighted sampling
     sampler = WeightedRandomSampler(
