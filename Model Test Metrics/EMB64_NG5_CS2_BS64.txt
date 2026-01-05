@@ -1,0 +1,50 @@
+============================================================
+MODEL TEST METRICS
+============================================================
+
+Generated: 2026-01-05 14:27:50
+Model file: EMB64_NG5_CS2_BS64.pth
+
+--- HYPERPARAMETERS ---
+Embedding Dim:    64
+Num Negatives:    5
+Context Size:     2
+Batch Size:       64
+
+--- MODEL INFO ---
+Vocabulary Size:  523
+Embedding Shape:  (523, 64)
+
+--- CIFAR-100 COVERAGE ---
+Words in model:   100/100
+
+--- SIMILARITY STATS (100 word sample) ---
+Mean:             0.4555
+Std:              0.1781
+Min:              0.0288
+Max:              0.9540
+
+--- NEAREST NEIGHBORS ---
+bear: elephant(0.690), mouse(0.682), cloud(0.658), giraffe(0.656), ball(0.638)
+elephant: flag(0.727), bottle(0.705), bear(0.690), rock(0.667), clouds(0.638)
+tiger: wolf(0.667), leopard(0.658), giraffes(0.636), cows(0.604), porcupine(0.604)
+lion: giraffes(0.678), camel(0.656), wolf(0.633), giraffe(0.612), men(0.611)
+whale: dolphin(0.676), shark(0.633), lobster(0.614), snake(0.585), lizard(0.584)
+butterfly: trash(0.616), lizard(0.599), frisbee(0.599), taken(0.563), bee(0.553)
+man: woman(0.795), horse(0.673), plane(0.659), shelf(0.640), person(0.637)
+woman: man(0.795), horse(0.795), person(0.785), skier(0.742), mirror(0.737)
+car: airplane(0.733), stripe(0.709), tie(0.672), cat(0.671), parked(0.654)
+tree: branches(0.696), fruit(0.678), trees(0.675), flowers(0.666), branch(0.662)
+building: bushes(0.665), sun(0.636), room(0.619), bowl(0.618), windows(0.614)
+water: group(0.617), edge(0.614), other(0.614), have(0.605), cloud(0.602)
+
+--- ANALOGY TESTS (a:b :: c:?) ---
+man:woman :: boy:? → waves(0.612), bananas(0.587), banana(0.587)
+red:apple :: yellow:? → slice(0.718), vase(0.704), pot(0.703)
+dog:cat :: horse:? → zebra(0.617), car(0.585), tie(0.568)
+car:road :: boat:? → sand(0.607), cloud(0.597), rock(0.577)
+
+--- UNIT TESTS ---
+Passed: Yes
+
+============================================================

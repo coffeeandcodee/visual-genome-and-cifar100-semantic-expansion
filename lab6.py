@@ -113,6 +113,51 @@ def filter_punctuation_from_network(network_data, punctuation_tokens={'.', ',', 
 
 
 # ============================================================================
+# CIFAR-100 Superclass Hierarchy
+# ============================================================================
+
+def build_cifar100_superclass_map() -> Dict[str, Set[str]]:
+    """
+    Returns a mapping from each CIFAR-100 fine label to its superclass siblings.
+    This allows the Skip-gram model to learn that 'apple' and 'orange' are related.
+    """
+    superclasses = {
+        'aquatic_mammals': ['beaver', 'dolphin', 'otter', 'seal', 'whale'],
+        'fish': ['aquarium_fish', 'flatfish', 'ray', 'shark', 'trout'],
+        'flowers': ['orchid', 'poppy', 'rose', 'sunflower', 'tulip'],
+        'food_containers': ['bottle', 'bowl', 'can', 'cup', 'plate'],
+        'fruit_and_vegetables': ['apple', 'mushroom', 'orange', 'pear', 'pepper'],
+        'household_electrical_devices': ['clock', 'keyboard', 'lamp', 'telephone', 'television'],
+        'household_furniture': ['bed', 'chair', 'couch', 'table', 'wardrobe'],
+        'insects': ['bee', 'beetle', 'butterfly', 'caterpillar', 'cockroach'],
+        'large_carnivores': ['bear', 'leopard', 'lion', 'tiger', 'wolf'],
+        'large_man-made_outdoor_things': ['bridge', 'castle', 'house', 'road', 'skyscraper'],
+        'large_natural_outdoor_scenes': ['cloud', 'forest', 'mountain', 'plain', 'sea'],
+        'large_omnivores_and_herbivores': ['camel', 'cattle', 'chimpanzee', 'elephant', 'kangaroo'],
+        'medium_mammals': ['fox', 'porcupine', 'possum', 'raccoon', 'skunk'],
+        'non-insect_invertebrates': ['crab', 'lobster', 'snail', 'spider', 'worm'],
+        'people': ['baby', 'boy', 'girl', 'man', 'woman'],
+        'reptiles': ['crocodile', 'dinosaur', 'lizard', 'snake', 'turtle'],
+        'small_mammals': ['hamster', 'mouse', 'rabbit', 'shrew', 'squirrel'],
+        'trees': ['maple', 'oak', 'palm', 'pine', 'willow'],
+        'vehicles_1': ['bicycle', 'bus', 'motorcycle', 'pickup', 'train'],
+        'vehicles_2': ['lawn_mower', 'rocket', 'streetcar', 'tank', 'tractor'],
+    }
+    
+    # Build word -> siblings mapping (excluding self)
+    word_to_siblings = {}
+    for superclass, words in superclasses.items():
+        for word in words:
+            # Handle compound words (e.g., aquarium_fish -> aquarium fish variants)
+            word_key = word.replace('_', ' ')  # Some might be "aquarium fish"
+            siblings = {w.replace('_', ' ') for w in words if w != word}
+            word_to_siblings[word] = siblings
+            word_to_siblings[word_key] = siblings  # Also map space version
+    
+    return word_to_siblings
+
+
+# ============================================================================
 # Dataset
 # ============================================================================
 
@@ -125,7 +170,8 @@ class SkipGramDataset(torch.utils.data.Dataset):
         distance_matrix: np.ndarray,
         num_negative: int = 15,
         context_size: int = 1,
-        token_counts: Dict[str, int] = None,  # NEW: for frequency-weighted negative sampling
+        token_counts: Dict[str, int] = None,  # For frequency-weighted negative sampling
+        superclass_map: Dict[str, Set[str]] = None,  # CIFAR-100 superclass siblings
     ):
     
         super().__init__()
@@ -136,6 +182,7 @@ class SkipGramDataset(torch.utils.data.Dataset):
         self.vocab_size = len(nodes)
         self.num_negative = num_negative
         self.distance_matrix = distance_matrix
+        self.superclass_map = superclass_map
 
         # Step 1: Build context sets for each node. WHY: We need to know which nodes are "related" to create positive pairs
         self.contexts = self._build_contexts(context_size)
@@ -170,6 +217,20 @@ class SkipGramDataset(torch.utils.data.Dataset):
             
             distances = nx.single_source_shortest_path_length(self.graph, node, cutoff=context_size)  #*
             contexts[node] = {n for n, d in distances.items() if d > 0 and n in self.node_to_idx}  #*
+        
+        # Add superclass siblings as additional context (CIFAR-100 hierarchy injection)
+        if self.superclass_map:
+            siblings_added = 0
+            for node in self.nodes:
+                if node in self.superclass_map:
+                    siblings = self.superclass_map[node]
+                    # Only add siblings that exist in our vocabulary
+                    valid_siblings = {s for s in siblings if s in self.node_to_idx}
+                    new_siblings = valid_siblings - contexts[node]
+                    contexts[node].update(valid_siblings)
+                    siblings_added += len(new_siblings)
+            if siblings_added > 0:
+                print(f"  🔗 Superclass injection: added {siblings_added} sibling pairs")
             
         return contexts  #*
 
@@ -405,10 +466,18 @@ def train_embeddings(
     label_smoothing=0.1,
     patience=3,
     device=None,
-    save_plot=True
+    save_plot=True,
+    use_superclass=False,  # Enable CIFAR-100 superclass hierarchy injection
 ):
 
-    device = device or ("cuda" if torch.cuda.is_available() else "cpu") #How do I set .is_available() to true?
+    # Device selection: MPS (Apple Silicon) > CUDA (NVIDIA) > CPU
+    if device is None:
+        if torch.backends.mps.is_available():
+            device = "mps"
+        elif torch.cuda.is_available():
+            device = "cuda"
+        else:
+            device = "cpu"
     
     # Filter punctuation
     network_data = filter_punctuation_from_network(network_data)
@@ -434,9 +503,14 @@ def train_embeddings(
     # Get token counts for frequency-weighted negative sampling
     token_counts = network_data.get('token_counts', None)
     
+    # Build superclass map if enabled
+    superclass_map = build_cifar100_superclass_map() if use_superclass else None
+    if use_superclass:
+        print("🔗 CIFAR-100 superclass hierarchy ENABLED")
+    
     # Create datasets
-    train_dataset = SkipGramDataset(train_graph, nodes, distance_matrix, num_negative, context_size, token_counts)
-    val_dataset = SkipGramDataset(val_graph, nodes, distance_matrix, num_negative, context_size, token_counts)
+    train_dataset = SkipGramDataset(train_graph, nodes, distance_matrix, num_negative, context_size, token_counts, superclass_map)
+    val_dataset = SkipGramDataset(val_graph, nodes, distance_matrix, num_negative, context_size, token_counts, superclass_map)
     
     # Create loaders with weighted sampling
     sampler = WeightedRandomSampler(
@@ -515,8 +589,8 @@ def train_embeddings(
                 'vocab_size': len(nodes),
                 'embedding_dim': embedding_dim
             }
-            torch.save(save_data, "best_model523.pth")        
-            print(f"  → Best model (val_loss={best_val_loss:.4f}), saved to best_model.pth")
+            torch.save(save_data, f"EMB{embedding_dim}_NG{num_negative}_CS{context_size}_BS{batch_size}.pth")        
+            print(f"  → Best model (val_loss={best_val_loss:.4f}), saved to EMB{embedding_dim}NG{num_negative}_CS{context_size}_BS{batch_size}.pth")
         else:
             patience_counter += 1
             if patience_counter >= patience:
@@ -527,19 +601,22 @@ def train_embeddings(
     if best_model_state:
         model.load_state_dict(best_model_state)
     
-    # Save plot
+    # Save plot with unique filename based on hyperparameters
     if save_plot:
+        plot_filename = f"plots/loss_EMB{embedding_dim}_NG{num_negative}_CS{context_size}_BS{batch_size}.png"
+        os.makedirs("plots", exist_ok=True)
+        
         plt.figure(figsize=(10, 6))
         plt.plot(train_losses, 'o-', label='Train', linewidth=2, markersize=6)
         plt.plot(val_losses, 's-', label='Validation', linewidth=2, markersize=6)
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
-        plt.title('Training and Validation Loss')
+        plt.title(f'Skip-Gram Training: EMB={embedding_dim}, NG={num_negative}, CS={context_size}, BS={batch_size}')
         plt.legend()
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
-        plt.savefig('training_loss.png', dpi=150)
-        print("\nSaved loss plot to training_loss.png")
+        plt.savefig(plot_filename, dpi=150)
+        print(f"\nSaved loss plot to {plot_filename}")
         plt.close()
     
     return {
@@ -575,7 +652,14 @@ def train_embeddings2(
     if 'network_data' in hyperparams: del hyperparams['network_data'] # Don't print the whole graph!
 
     # ... [YOUR EXISTING SETUP CODE] ...
-    device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+    # Device selection: MPS (Apple Silicon) > CUDA (NVIDIA) > CPU
+    if device is None:
+        if torch.backends.mps.is_available():
+            device = "mps"
+        elif torch.cuda.is_available():
+            device = "cuda"
+        else:
+            device = "cpu"
     
     # [Start Timer]
     start_time = time.time()

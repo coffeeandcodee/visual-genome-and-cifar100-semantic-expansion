@@ -1,0 +1,42 @@
+============================================================
+EXPERIMENT: NG10
+============================================================
+
+Generated: 2026-01-04 20:23:18
+
+--- HYPERPARAMETERS ---
+Embedding Dim:    64
+Num Negatives:    10
+Context Size:     2
+Batch Size:       64
+Learning Rate:    0.001
+Dropout:          0.3
+Weight Decay:     0.0001
+
+--- TRAINING RESULTS ---
+Best Val Loss:    4.2585
+Final Train Loss: 4.6610
+Final Val Loss:   4.2733
+Epochs Run:       13
+Training Time:    7.55 min
+
+--- SIMILARITY STATS ---
+Mean:             0.5192
+Std:              0.1623
+Min:              0.1372
+Max:              0.9785
+
+--- CIFAR-100 COVERAGE ---
+Coverage:         100/100
+
+--- ANALOGY ACCURACY ---
+Score:            0.0000
+
+--- NEAREST NEIGHBORS ---
+bear: elephant(0.803), broccoli(0.728), area(0.695), ball(0.684), mouse(0.678)
+apple: corner(0.702), vase(0.687), slice(0.664), dish(0.661), bread(0.655)
+car: stripe(0.676), bus(0.672), writing(0.648), jet(0.646), passenger(0.643)
+man: woman(0.819), person(0.694), plane(0.685), shelf(0.679), horse(0.672)
+dog: skiing(0.789), cow(0.772), toilet(0.690), horse(0.685), mountains(0.679)
+
+============================================================

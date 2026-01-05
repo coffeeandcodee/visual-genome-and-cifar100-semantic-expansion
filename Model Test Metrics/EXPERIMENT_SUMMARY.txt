@@ -1,0 +1,167 @@
+================================================================================
+SKIP-GRAM HYPERPARAMETER EXPERIMENT SUMMARY
+================================================================================
+
+Generated: 2026-01-04 21:28:00
+Total Experiments: 16
+Successful: 16
+
+================================================================================
+BASELINE HYPERPARAMETERS
+================================================================================
+  embedding_dim: 64
+  num_negative: 10
+  context_size: 2
+  batch_size: 64
+  learning_rate: 0.001
+  epochs: 50
+  dropout: 0.3
+  weight_decay: 0.0001
+  label_smoothing: 0.1
+  patience: 5
+
+================================================================================
+EXPERIMENT RESULTS (sorted by Best Val Loss)
+================================================================================
+
+--- NG5 ---
+  Emb=64, Neg=5, CS=2, BS=64
+  Best Val Loss: 3.3404
+  Sim Mean/Std:  0.4418 / 0.1792
+  Analogy Score: 0.0000
+  Training Time: 6.31 min
+
+--- CS4 ---
+  Emb=64, Neg=10, CS=4, BS=64
+  Best Val Loss: 4.2044
+  Sim Mean/Std:  0.5156 / 0.1615
+  Analogy Score: 0.0000
+  Training Time: 9.18 min
+
+--- EMB128 ---
+  Emb=128, Neg=10, CS=2, BS=64
+  Best Val Loss: 4.2130
+  Sim Mean/Std:  0.4041 / 0.1553
+  Analogy Score: 0.0000
+  Training Time: 7.86 min
+
+--- EMB256 ---
+  Emb=256, Neg=10, CS=2, BS=64
+  Best Val Loss: 4.2292
+  Sim Mean/Std:  0.3177 / 0.1396
+  Analogy Score: 0.0833
+  Training Time: 14.87 min
+
+--- EMB64 ---
+  Emb=64, Neg=10, CS=2, BS=64
+  Best Val Loss: 4.2302
+  Sim Mean/Std:  0.5125 / 0.1621
+  Analogy Score: 0.0000
+  Training Time: 5.89 min
+
+--- BS64 ---
+  Emb=64, Neg=10, CS=2, BS=64
+  Best Val Loss: 4.2499
+  Sim Mean/Std:  0.5237 / 0.1605
+  Analogy Score: 0.0417
+  Training Time: 4.67 min
+
+--- CS3 ---
+  Emb=64, Neg=10, CS=3, BS=64
+  Best Val Loss: 4.2525
+  Sim Mean/Std:  0.4965 / 0.1630
+  Analogy Score: 0.0000
+  Training Time: 15.27 min
+
+--- CS2 ---
+  Emb=64, Neg=10, CS=2, BS=64
+  Best Val Loss: 4.2533
+  Sim Mean/Std:  0.5052 / 0.1642
+  Analogy Score: 0.0000
+  Training Time: 11.01 min
+
+--- BS256 ---
+  Emb=64, Neg=10, CS=2, BS=256
+  Best Val Loss: 4.2583
+  Sim Mean/Std:  0.6861 / 0.1325
+  Analogy Score: 0.0000
+  Training Time: 2.25 min
+
+--- NG10 ---
+  Emb=64, Neg=10, CS=2, BS=64
+  Best Val Loss: 4.2585
+  Sim Mean/Std:  0.5192 / 0.1623
+  Analogy Score: 0.0000
+  Training Time: 7.55 min
+
+--- BS32 ---
+  Emb=64, Neg=10, CS=2, BS=32
+  Best Val Loss: 4.2675
+  Sim Mean/Std:  0.4960 / 0.1650
+  Analogy Score: 0.0000
+  Training Time: 6.74 min
+
+--- BS128 ---
+  Emb=64, Neg=10, CS=2, BS=128
+  Best Val Loss: 4.2914
+  Sim Mean/Std:  0.5542 / 0.1574
+  Analogy Score: 0.0000
+  Training Time: 3.60 min
+
+--- EMB32 ---
+  Emb=32, Neg=10, CS=2, BS=64
+  Best Val Loss: 4.2954
+  Sim Mean/Std:  0.6645 / 0.1465
+  Analogy Score: 0.0000
+  Training Time: 5.22 min
+
+--- CS1 ---
+  Emb=64, Neg=10, CS=1, BS=64
+  Best Val Loss: 4.3820
+  Sim Mean/Std:  0.2779 / 0.1894
+  Analogy Score: 0.0000
+  Training Time: 0.98 min
+
+--- NG15 ---
+  Emb=64, Neg=15, CS=2, BS=64
+  Best Val Loss: 4.9400
+  Sim Mean/Std:  0.5568 / 0.1515
+  Analogy Score: 0.0312
+  Training Time: 5.24 min
+
+--- NG20 ---
+  Emb=64, Neg=20, CS=2, BS=64
+  Best Val Loss: 5.5934
+  Sim Mean/Std:  0.6060 / 0.1435
+  Analogy Score: 0.0000
+  Training Time: 5.75 min
+
+================================================================================
+KEY FINDINGS
+================================================================================
+
+EMBEDDING DIMENSION EFFECT:
+   32: val_loss=4.2954, sim_std=0.1465
+   64: val_loss=4.2302, sim_std=0.1621
+  128: val_loss=4.2130, sim_std=0.1553
+  256: val_loss=4.2292, sim_std=0.1396
+
+NUM NEGATIVES EFFECT:
+   5: val_loss=3.3404, sim_std=0.1792
+  10: val_loss=4.2585, sim_std=0.1623
+  15: val_loss=4.9400, sim_std=0.1515
+  20: val_loss=5.5934, sim_std=0.1435
+
+CONTEXT SIZE EFFECT:
+  1: val_loss=4.3820, sim_std=0.1894
+  2: val_loss=4.2533, sim_std=0.1642
+  3: val_loss=4.2525, sim_std=0.1630
+  4: val_loss=4.2044, sim_std=0.1615
+
+BATCH SIZE EFFECT:
+   32: val_loss=4.2675, sim_std=0.1650
+   64: val_loss=4.2499, sim_std=0.1605
+  128: val_loss=4.2914, sim_std=0.1574
+  256: val_loss=4.2583, sim_std=0.1325
+
+================================================================================

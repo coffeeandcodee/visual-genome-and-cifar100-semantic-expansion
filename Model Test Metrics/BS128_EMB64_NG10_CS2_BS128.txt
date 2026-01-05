@@ -1,0 +1,42 @@
+============================================================
+EXPERIMENT: BS128
+============================================================
+
+Generated: 2026-01-04 21:25:45
+
+--- HYPERPARAMETERS ---
+Embedding Dim:    64
+Num Negatives:    10
+Context Size:     2
+Batch Size:       128
+Learning Rate:    0.001
+Dropout:          0.3
+Weight Decay:     0.0001
+
+--- TRAINING RESULTS ---
+Best Val Loss:    4.2914
+Final Train Loss: 4.6705
+Final Val Loss:   4.2931
+Epochs Run:       8
+Training Time:    3.60 min
+
+--- SIMILARITY STATS ---
+Mean:             0.5542
+Std:              0.1574
+Min:              0.1486
+Max:              0.9769
+
+--- CIFAR-100 COVERAGE ---
+Coverage:         100/100
+
+--- ANALOGY ACCURACY ---
+Score:            0.0000
+
+--- NEAREST NEIGHBORS ---
+bear: elephant(0.797), broccoli(0.736), zebra(0.706), floor(0.703), mouse(0.681)
+apple: pot(0.780), container(0.776), vase(0.740), dish(0.726), bread(0.721)
+car: airplane(0.715), tie(0.681), luggage(0.671), motorcycle(0.664), woman's(0.662)
+man: woman(0.776), metal(0.721), person(0.708), shelf(0.670), shorts(0.668)
+dog: skiing(0.821), cow(0.789), ears(0.750), tag(0.739), animal(0.726)
+
+============================================================

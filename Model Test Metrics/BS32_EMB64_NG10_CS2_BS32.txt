@@ -1,0 +1,42 @@
+============================================================
+EXPERIMENT: BS32
+============================================================
+
+Generated: 2026-01-04 21:17:28
+
+--- HYPERPARAMETERS ---
+Embedding Dim:    64
+Num Negatives:    10
+Context Size:     2
+Batch Size:       32
+Learning Rate:    0.001
+Dropout:          0.3
+Weight Decay:     0.0001
+
+--- TRAINING RESULTS ---
+Best Val Loss:    4.2675
+Final Train Loss: 4.6682
+Final Val Loss:   4.2700
+Epochs Run:       8
+Training Time:    6.74 min
+
+--- SIMILARITY STATS ---
+Mean:             0.4960
+Std:              0.1650
+Min:              0.0620
+Max:              0.9584
+
+--- CIFAR-100 COVERAGE ---
+Coverage:         100/100
+
+--- ANALOGY ACCURACY ---
+Score:            0.0000
+
+--- NEAREST NEIGHBORS ---
+bear: elephant(0.744), ball(0.695), mouse(0.687), area(0.682), broccoli(0.667)
+apple: bread(0.702), slice(0.691), dish(0.676), pot(0.658), fruit(0.647)
+car: stripe(0.660), lights(0.656), computer(0.645), passenger(0.620), luggage(0.602)
+man: woman(0.804), dog(0.692), horse(0.650), men(0.645), tennis(0.640)
+dog: cow(0.746), skiing(0.720), man(0.692), tag(0.680), horse(0.667)
+
+============================================================

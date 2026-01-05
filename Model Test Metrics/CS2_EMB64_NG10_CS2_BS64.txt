@@ -1,0 +1,42 @@
+============================================================
+EXPERIMENT: CS2
+============================================================
+
+Generated: 2026-01-04 20:46:17
+
+--- HYPERPARAMETERS ---
+Embedding Dim:    64
+Num Negatives:    10
+Context Size:     2
+Batch Size:       64
+Learning Rate:    0.001
+Dropout:          0.3
+Weight Decay:     0.0001
+
+--- TRAINING RESULTS ---
+Best Val Loss:    4.2533
+Final Train Loss: 4.6594
+Final Val Loss:   4.2776
+Epochs Run:       19
+Training Time:    11.01 min
+
+--- SIMILARITY STATS ---
+Mean:             0.5052
+Std:              0.1642
+Min:              0.1410
+Max:              0.9785
+
+--- CIFAR-100 COVERAGE ---
+Coverage:         100/100
+
+--- ANALOGY ACCURACY ---
+Score:            0.0000
+
+--- NEAREST NEIGHBORS ---
+bear: elephant(0.767), bridge(0.697), ball(0.694), broccoli(0.684), area(0.671)
+apple: dish(0.728), slice(0.702), container(0.686), bread(0.684), button(0.658)
+car: stripe(0.700), bus(0.668), airplane(0.655), tie(0.639), platform(0.634)
+man: woman(0.807), person(0.719), skier(0.676), plane(0.657), rail(0.645)
+dog: skiing(0.745), cow(0.740), ears(0.644), plate(0.639), man(0.635)
+
+============================================================

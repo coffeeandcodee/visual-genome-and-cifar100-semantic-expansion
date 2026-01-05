@@ -1,0 +1,42 @@
+============================================================
+EXPERIMENT: EMB32
+============================================================
+
+Generated: 2026-01-04 19:40:50
+
+--- HYPERPARAMETERS ---
+Embedding Dim:    32
+Num Negatives:    10
+Context Size:     2
+Batch Size:       64
+Learning Rate:    0.001
+Dropout:          0.3
+Weight Decay:     0.0001
+
+--- TRAINING RESULTS ---
+Best Val Loss:    4.2954
+Final Train Loss: 4.7292
+Final Val Loss:   4.2987
+Epochs Run:       9
+Training Time:    5.22 min
+
+--- SIMILARITY STATS ---
+Mean:             0.6645
+Std:              0.1465
+Min:              0.2436
+Max:              0.9875
+
+--- CIFAR-100 COVERAGE ---
+Coverage:         100/100
+
+--- ANALOGY ACCURACY ---
+Score:            0.0000
+
+--- NEAREST NEIGHBORS ---
+bear: clouds(0.828), ball(0.818), mouse(0.817), elephant(0.801), broccoli(0.791)
+apple: slice(0.872), open(0.859), basket(0.826), pot(0.824), hanging(0.794)
+car: pole(0.804), counter(0.775), cement(0.768), stripe(0.766), camera(0.760)
+man: four(0.832), cow(0.811), woman(0.803), wire(0.794), tennis(0.791)
+dog: skiing(0.924), cow(0.870), wearing(0.814), food(0.807), animal(0.806)
+
+============================================================

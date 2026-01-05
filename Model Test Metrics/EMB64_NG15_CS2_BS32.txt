@@ -1,0 +1,50 @@
+============================================================
+MODEL TEST METRICS
+============================================================
+
+Generated: 2026-01-04 15:37:44
+Model file: EMB64_NG15_CS2_BS32.pth
+
+--- HYPERPARAMETERS ---
+Embedding Dim:    64
+Num Negatives:    15
+Context Size:     2
+Batch Size:       32
+
+--- MODEL INFO ---
+Vocabulary Size:  523
+Embedding Shape:  (523, 64)
+
+--- CIFAR-100 COVERAGE ---
+Words in model:   100/100
+
+--- SIMILARITY STATS (100 word sample) ---
+Mean:             0.5452
+Std:              0.1545
+Min:              0.0923
+Max:              0.9686
+
+--- NEAREST NEIGHBORS ---
+bear: elephant(0.804), brick(0.722), bridge(0.715), broccoli(0.713), mouse(0.691)
+elephant: bear(0.804), bottle(0.779), area(0.741), flag(0.725), stone(0.702)
+tiger: leopard(0.812), wolf(0.803), lion(0.766), skunk(0.760), men(0.756)
+lion: kangaroo(0.805), wolf(0.783), squirrel(0.771), tiger(0.766), zebra(0.751)
+whale: dolphin(0.870), shark(0.833), snake(0.784), lizard(0.748), crocodile(0.746)
+butterfly: lizard(0.779), bee(0.750), suitcase(0.670), dinosaur(0.663), sunglasses(0.660)
+man: woman(0.765), middle(0.725), tennis(0.708), horse(0.698), dog(0.692)
+woman: horse(0.841), person(0.809), shelf(0.799), keyboard(0.787), man(0.765)
+car: stripe(0.667), shoe(0.665), motorcycle(0.660), bike(0.654), airplane(0.651)
+tree: branch(0.752), growing(0.737), leaf(0.724), plant(0.723), flowers(0.722)
+building: street(0.695), ski(0.677), parking(0.655), mouse(0.653), clock(0.649)
+water: group(0.703), hair(0.688), scene(0.671), pavement(0.637), wet(0.637)
+
+--- ANALOGY TESTS (a:b :: c:?) ---
+man:woman :: boy:? → person(0.657), napkin(0.653), skateboard(0.649)
+red:apple :: yellow:? → bread(0.691), slice(0.690), next(0.679)
+dog:cat :: horse:? → arm(0.665), stop(0.641), license(0.617)
+car:road :: boat:? → rock(0.653), wave(0.642), sand(0.637)
+
+--- UNIT TESTS ---
+Passed: Yes
+
+============================================================

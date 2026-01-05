@@ -1,0 +1,42 @@
+============================================================
+EXPERIMENT: NG15
+============================================================
+
+Generated: 2026-01-04 20:28:33
+
+--- HYPERPARAMETERS ---
+Embedding Dim:    64
+Num Negatives:    15
+Context Size:     2
+Batch Size:       64
+Learning Rate:    0.001
+Dropout:          0.3
+Weight Decay:     0.0001
+
+--- TRAINING RESULTS ---
+Best Val Loss:    4.9400
+Final Train Loss: 6.4319
+Final Val Loss:   4.9459
+Epochs Run:       9
+Training Time:    5.24 min
+
+--- SIMILARITY STATS ---
+Mean:             0.5568
+Std:              0.1515
+Min:              0.1996
+Max:              0.9749
+
+--- CIFAR-100 COVERAGE ---
+Coverage:         100/100
+
+--- ANALOGY ACCURACY ---
+Score:            0.0312
+
+--- NEAREST NEIGHBORS ---
+bear: elephant(0.748), bridge(0.729), clouds(0.723), mouse(0.700), ball(0.699)
+apple: slice(0.754), bread(0.749), dish(0.737), container(0.693), pot(0.680)
+car: passenger(0.706), platform(0.674), luggage(0.658), tie(0.658), stripe(0.656)
+man: woman(0.789), tennis(0.737), dog(0.736), rack(0.719), oven(0.710)
+dog: skiing(0.755), man(0.736), cow(0.727), horse(0.677), mountains(0.675)
+
+============================================================

@@ -1,0 +1,42 @@
+============================================================
+EXPERIMENT: EMB128
+============================================================
+
+Generated: 2026-01-04 19:54:35
+
+--- HYPERPARAMETERS ---
+Embedding Dim:    128
+Num Negatives:    10
+Context Size:     2
+Batch Size:       64
+Learning Rate:    0.001
+Dropout:          0.3
+Weight Decay:     0.0001
+
+--- TRAINING RESULTS ---
+Best Val Loss:    4.2130
+Final Train Loss: 4.6088
+Final Val Loss:   4.2352
+Epochs Run:       13
+Training Time:    7.86 min
+
+--- SIMILARITY STATS ---
+Mean:             0.4041
+Std:              0.1553
+Min:              0.0709
+Max:              0.9496
+
+--- CIFAR-100 COVERAGE ---
+Coverage:         100/100
+
+--- ANALOGY ACCURACY ---
+Score:            0.0000
+
+--- NEAREST NEIGHBORS ---
+bear: elephant(0.681), mouse(0.590), bridge(0.576), ball(0.572), broccoli(0.568)
+apple: button(0.610), bread(0.597), slice(0.587), dish(0.581), vase(0.563)
+car: bus(0.583), stripe(0.575), tie(0.568), bike(0.549), windshield(0.540)
+man: woman(0.776), skier(0.624), person(0.601), dog(0.572), shelf(0.555)
+dog: cow(0.698), skiing(0.638), horse(0.597), tag(0.590), man(0.572)
+
+============================================================

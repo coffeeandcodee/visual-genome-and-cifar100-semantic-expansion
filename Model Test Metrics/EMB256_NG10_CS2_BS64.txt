@@ -1,0 +1,50 @@
+============================================================
+MODEL TEST METRICS
+============================================================
+
+Generated: 2026-01-05 10:56:20
+Model file: EMB256_NG10_CS2_BS64.pth
+
+--- HYPERPARAMETERS ---
+Embedding Dim:    256
+Num Negatives:    10
+Context Size:     2
+Batch Size:       64
+
+--- MODEL INFO ---
+Vocabulary Size:  523
+Embedding Shape:  (523, 256)
+
+--- CIFAR-100 COVERAGE ---
+Words in model:   100/100
+
+--- SIMILARITY STATS (100 word sample) ---
+Mean:             0.3165
+Std:              0.1386
+Min:              0.0171
+Max:              0.8847
+
+--- NEAREST NEIGHBORS ---
+bear: elephant(0.595), giraffe(0.527), zebra(0.512), ball(0.489), bridge(0.488)
+elephant: bear(0.595), area(0.564), bottle(0.527), bridge(0.517), flag(0.512)
+tiger: skunk(0.443), leopard(0.436), zebra(0.421), lion(0.413), raccoon(0.411)
+lion: camel(0.446), zebra(0.428), wolf(0.425), giraffe(0.422), tiger(0.413)
+whale: dolphin(0.484), shark(0.471), lobster(0.408), traffic(0.406), crocodile(0.398)
+butterfly: lizard(0.464), bee(0.417), skier(0.372), traffic(0.363), television(0.350)
+man: woman(0.729), person(0.572), plane(0.530), shelf(0.527), skier(0.523)
+woman: man(0.729), person(0.703), horse(0.617), skier(0.597), guy(0.585)
+car: passenger(0.504), bus(0.465), van(0.464), park(0.464), cement(0.463)
+tree: flowers(0.602), branch(0.591), leaf(0.553), plant(0.516), branches(0.506)
+building: street(0.525), bowl(0.512), buildings(0.511), clock(0.510), sidewalk(0.486)
+water: edge(0.441), bottom(0.428), concrete(0.428), over(0.419), surfer(0.413)
+
+--- ANALOGY TESTS (a:b :: c:?) ---
+man:woman :: boy:? → napkin(0.479), person(0.457), bird(0.440)
+red:apple :: yellow:? → dish(0.512), off(0.444), tray(0.435)
+dog:cat :: horse:? → airplane(0.429), giraffe(0.418), zebra(0.414)
+car:road :: boat:? → sandwich(0.450), wave(0.449), dog(0.418)
+
+--- UNIT TESTS ---
+Passed: Yes
+
+============================================================

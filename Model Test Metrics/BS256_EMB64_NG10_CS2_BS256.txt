@@ -1,0 +1,42 @@
+============================================================
+EXPERIMENT: BS256
+============================================================
+
+Generated: 2026-01-04 21:28:00
+
+--- HYPERPARAMETERS ---
+Embedding Dim:    64
+Num Negatives:    10
+Context Size:     2
+Batch Size:       256
+Learning Rate:    0.001
+Dropout:          0.3
+Weight Decay:     0.0001
+
+--- TRAINING RESULTS ---
+Best Val Loss:    4.2583
+Final Train Loss: 4.7005
+Final Val Loss:   4.2917
+Epochs Run:       6
+Training Time:    2.25 min
+
+--- SIMILARITY STATS ---
+Mean:             0.6861
+Std:              0.1325
+Min:              0.2516
+Max:              0.9768
+
+--- CIFAR-100 COVERAGE ---
+Coverage:         100/100
+
+--- ANALOGY ACCURACY ---
+Score:            0.0000
+
+--- NEAREST NEIGHBORS ---
+bear: elephant(0.904), mouse(0.873), elephants(0.849), clouds(0.846), broccoli(0.839)
+apple: slice(0.913), bread(0.907), pot(0.905), open(0.896), container(0.890)
+car: curtain(0.828), shirt(0.827), surfer(0.821), tie(0.811), bus(0.800)
+man: woman(0.884), four(0.846), horse(0.840), tie(0.837), elephants(0.837)
+dog: cow(0.876), tag(0.835), skiing(0.830), glove(0.828), wearing(0.823)
+
+============================================================

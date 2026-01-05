@@ -1,0 +1,50 @@
+============================================================
+MODEL TEST METRICS
+============================================================
+
+Generated: 2026-01-04 19:35:36
+Model file: EMB64_NG20_CS3_BS32.pth
+
+--- HYPERPARAMETERS ---
+Embedding Dim:    64
+Num Negatives:    20
+Context Size:     3
+Batch Size:       32
+
+--- MODEL INFO ---
+Vocabulary Size:  523
+Embedding Shape:  (523, 64)
+
+--- CIFAR-100 COVERAGE ---
+Words in model:   100/100
+
+--- SIMILARITY STATS (100 word sample) ---
+Mean:             0.5501
+Std:              0.1437
+Min:              0.1475
+Max:              0.9458
+
+--- NEAREST NEIGHBORS ---
+bear: mouse(0.730), bridge(0.729), elephant(0.715), giraffe(0.715), ball(0.701)
+elephant: flag(0.731), clouds(0.716), bear(0.715), bottle(0.705), hill(0.687)
+tiger: wolf(0.832), leopard(0.813), spider(0.807), lion(0.798), dolphin(0.796)
+lion: camel(0.824), kangaroo(0.823), wolf(0.805), cows(0.804), tiger(0.798)
+whale: dolphin(0.846), shark(0.843), crocodile(0.811), snake(0.793), shrew(0.779)
+butterfly: lizard(0.854), caterpillar(0.747), bee(0.746), shark(0.728), turtle(0.716)
+man: woman(0.788), shelf(0.715), cabinet(0.706), rack(0.700), person(0.687)
+woman: shelf(0.803), man(0.788), horse(0.770), toilet(0.747), horses(0.744)
+car: stripe(0.709), tie(0.705), passenger(0.696), bus(0.695), sweater(0.683)
+tree: leaf(0.731), branch(0.694), basket(0.694), trunk(0.689), flowers(0.687)
+building: lettering(0.686), parking(0.669), bowl(0.668), street(0.667), bridge(0.663)
+water: face(0.629), dark(0.624), reflection(0.612), closed(0.612), there(0.609)
+
+--- ANALOGY TESTS (a:b :: c:?) ---
+man:woman :: boy:? → sheep(0.635), bird(0.627), waves(0.621)
+red:apple :: yellow:? → slice(0.726), dish(0.722), bread(0.678)
+dog:cat :: horse:? → luggage(0.641), airplane(0.628), glass(0.617)
+car:road :: boat:? → dirt(0.579), distance(0.577), surface(0.554)
+
+--- UNIT TESTS ---
+Passed: Yes
+
+============================================================

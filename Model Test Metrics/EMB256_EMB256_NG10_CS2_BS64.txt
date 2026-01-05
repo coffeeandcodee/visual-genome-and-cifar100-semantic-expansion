@@ -1,0 +1,42 @@
+============================================================
+EXPERIMENT: EMB256
+============================================================
+
+Generated: 2026-01-04 20:09:27
+
+--- HYPERPARAMETERS ---
+Embedding Dim:    256
+Num Negatives:    10
+Context Size:     2
+Batch Size:       64
+Learning Rate:    0.001
+Dropout:          0.3
+Weight Decay:     0.0001
+
+--- TRAINING RESULTS ---
+Best Val Loss:    4.2292
+Final Train Loss: 4.5692
+Final Val Loss:   4.2394
+Epochs Run:       23
+Training Time:    14.87 min
+
+--- SIMILARITY STATS ---
+Mean:             0.3177
+Std:              0.1396
+Min:              0.0200
+Max:              0.8931
+
+--- CIFAR-100 COVERAGE ---
+Coverage:         100/100
+
+--- ANALOGY ACCURACY ---
+Score:            0.0833
+
+--- NEAREST NEIGHBORS ---
+bear: elephant(0.600), giraffe(0.528), zebra(0.517), bridge(0.509), ball(0.500)
+apple: dish(0.559), slice(0.494), tray(0.481), computer(0.479), button(0.477)
+car: passenger(0.514), bus(0.466), stripe(0.465), park(0.458), cement(0.458)
+man: woman(0.736), person(0.589), skier(0.544), horse(0.528), plane(0.527)
+dog: cow(0.622), horse(0.559), man(0.523), tag(0.487), sauce(0.475)
+
+============================================================
